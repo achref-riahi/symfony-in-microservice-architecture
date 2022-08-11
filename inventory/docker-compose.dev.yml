@@ -1,6 +1,14 @@
 version: '3'
 
 services:
+  roadrunner:
+    build:
+      context: .
+      dockerfile: ./dockerfiles/roadrunner/dev.Dockerfile
+    volumes:
+      - ./:/usr/src/app
+    ports:
+      - 8080:8080
 ###> doctrine/doctrine-bundle ###
   database:
     image: postgres:${POSTGRES_VERSION:-14}-alpine
