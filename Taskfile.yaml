@@ -1,0 +1,68 @@
+# https://taskfile.dev
+
+version: '3'
+
+vars:
+  INVENTORY_APP_CONTAINER: inventory_app
+  INVENTORY_DB_CONTAINER: inventory_db
+  FINANCE_APP_CONTAINER: finance_app
+  NETWORK_NAME: microservices_common_network
+
+output:
+  group:
+    begin: '.:: BEGIN 🔥 {{.TASK}} TASK ::.'
+    end: '.:: END 🏁 {{.TASK}} TASK ::.'
+
+includes:
+  inventory:
+    taskfile: ./inventory
+    dir: ./inventory
+  finance:
+    taskfile: ./finance
+    dir: ./finance
+
+tasks:
+  create-network:
+    cmds:
+      - |
+        if [ -z $(docker network ls --filter name=^{{.NETWORK_NAME}}$ --format=\'{{ .Name }}\') ]
+          then
+          docker network create {{.NETWORK_NAME}} > /dev/null
+        fi
+    silent: true
+  
+  up:
+    cmds:
+      - task: create-network
+      - task: inventory:{{.TASK}}
+        vars:
+          INVENTORY_APP_CONTAINER: '{{.INVENTORY_APP_CONTAINER}}'
+          INVENTORY_DB_CONTAINER: '{{.INVENTORY_DB_CONTAINER}}'
+          FINANCE_APP_CONTAINER: '{{.FINANCE_APP_CONTAINER}}'
+          NETWORK_NAME: '{{.NETWORK_NAME}}'
+      - task: finance:{{.TASK}}
+        vars:
+          FINANCE_APP_CONTAINER: '{{.FINANCE_APP_CONTAINER}}'
+          NETWORK_NAME: '{{.NETWORK_NAME}}'
+    silent: true
+    
+  down:
+    cmds:
+      - task: inventory:{{.TASK}}
+      - task: finance:{{.TASK}}
+    silent: true
+
+  build:
+    cmds:
+      - task: inventory:{{.TASK}}
+      - task: finance:{{.TASK}}
+    silent: true
+
+  fire-all:
+    cmds:
+      - task: down
+      - task: create-network
+      - task: build
+      - task: up
+      - task: inventory:init-db
+    silent: true
