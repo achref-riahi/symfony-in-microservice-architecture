@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+
+option go_package = "./finance";
+option php_namespace = "App\\Protobuf\\Generated";
+option php_metadata_namespace = "App\\Protobuf\\Generated\\GPBMetadata";
+
+package app;
+
+enum Currency {
+    UNKNOWN = 0;
+    TND = 1;
+    USD = 2;
+    EUR = 3;
+}
+
+message GetExchangeRateRequest {
+    Currency from = 1;
+    Currency to = 2;
+}
+
+message GetExchangeRateResponse {
+    double rate = 1;
+}
+
+service Finance {
+    rpc getExchangeRate (GetExchangeRateRequest) returns (GetExchangeRateResponse) {};
+}
