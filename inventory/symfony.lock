@@ -20,7 +20,10 @@
             "branch": "main",
             "version": "2.0",
             "ref": "cdd398712fbc03897c0550c856df05fb9ab2b36b"
-        }
+        },
+        "files": [
+            "config/packages/baldinof_road_runner.yaml"
+        ]
     },
     "doctrine/annotations": {
         "version": "1.13",
