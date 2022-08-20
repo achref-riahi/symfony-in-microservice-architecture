@@ -22,9 +22,10 @@ class AppFixtures extends Fixture
             $category->setName('Category '.$i);
             $manager->persist($category);
             for ($j = 1; $j < mt_rand(2, 10); $j++) {
+                $price = number_format(mt_rand(10 * 2, 100 * 2) / 4, 3, '.', '');
                 $product = new Product();
                 $product->setName('Product '. $i . $j)
-                        ->setPrice(mt_rand(10 * 2, 100 * 2) / 4)
+                        ->setPrice($price)
                         ->setQuantity(mt_rand(0, 10))
                         ->setCategory($category);
                 $manager->persist($product);
