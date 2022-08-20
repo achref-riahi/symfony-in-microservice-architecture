@@ -1,0 +1,47 @@
+# https://taskfile.dev
+
+version: '3'
+
+tasks:
+  up:
+    cmds:
+      - docker-compose -f docker-compose.dev.yml up -d
+    silent: true
+    env:
+      INVENTORY_APP_CONTAINER: '{{.INVENTORY_APP_CONTAINER}}'
+      INVENTORY_DB_CONTAINER: '{{.INVENTORY_DB_CONTAINER}}'
+      FINANCE_APP_CONTAINER: '{{.FINANCE_APP_CONTAINER}}'
+      NETWORK_NAME: '{{.NETWORK_NAME}}'
+
+  down:
+    cmds:
+      - docker-compose -f docker-compose.dev.yml down -v
+    silent: true
+
+  build:
+    cmds:
+      - docker-compose -f docker-compose.dev.yml build
+    silent: true
+
+  restart:
+    cmds:
+      - docker-compose -f docker-compose.dev.yml restart {{.CLI_ARGS}}
+    silent: true
+
+  init-db:
+    cmds:
+      - |
+        until docker exec $(docker-compose -f docker-compose.dev.yml ps -q pgsql) pg_isready; do \
+          sleep 0.5 ; \
+        done
+        docker-compose -f docker-compose.dev.yml exec roadrunner php bin/console doc:mig:mig --no-interaction
+        docker-compose -f docker-compose.dev.yml exec roadrunner php bin/console doc:fix:load --no-interaction
+    silent: true
+
+  fire-all:
+    cmds:
+      - task: down
+      - task: build
+      - task: up
+      - task: init-db
+    silent: true

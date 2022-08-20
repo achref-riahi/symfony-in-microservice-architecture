@@ -2,30 +2,39 @@ version: '3'
 
 services:
   roadrunner:
+    container_name: ${INVENTORY_APP_CONTAINER:-inventory_app}
     build:
       context: .
       dockerfile: ./dockerfiles/roadrunner/dev.Dockerfile
+    environment:
+      FINANCE_APP_CONTAINER: ${FINANCE_APP_CONTAINER:-finance_app}
     volumes:
       - ./:/usr/src/app
     ports:
-      - 8080:8080
+      - ${WEB_HOST_PORT:-18080}:8080
+      - ${GRPC_HOST_PORT:-19000}:9000
 ###> doctrine/doctrine-bundle ###
-  database:
-    image: postgres:${POSTGRES_VERSION:-14}-alpine
+  pgsql:
+    container_name: ${DB_HOST:-inventory_db}
+    image: postgres:${DB_VERSION:-14}-alpine
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-app}
+      POSTGRES_DB: ${DB_NAME:-inventory}
       # You should definitely change the password in production
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-!ChangeMe!}
-      POSTGRES_USER: ${POSTGRES_USER:-app}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-p@$$w0rd}
+      POSTGRES_USER: ${DB_USER:-user}
     volumes:
       - db-data:/var/lib/postgresql/data:rw
       # You may use a bind-mounted host directory instead, so that it is harder to accidentally remove the volume and lose all your data!
       # - ./docker/db/data:/var/lib/postgresql/data:rw
     ports:
-      - 5432:5432
+      - ${DB_HOST_PORT:-15432}:${DB_PORT:-5432}
 ###< doctrine/doctrine-bundle ###
 
 volumes:
 ###> doctrine/doctrine-bundle ###
   db-data:
 ###< doctrine/doctrine-bundle ###
+
+networks:
+  default:
+    name: ${NETWORK_NAME:-inventory_network}
