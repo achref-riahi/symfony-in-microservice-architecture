@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+option php_namespace = "App\\Protobuf\\Generated";
+option php_metadata_namespace = "App\\Protobuf\\Generated\\GPBMetadata";
+
+import "google/protobuf/empty.proto";
+
+package app;
+
+message Product {
+    int32 id = 1;
+    string name = 2;
+    float price = 3;
+    int32 quantity = 4;
+    Category category = 5;
+}   
+
+message Category {
+    int32 id = 1;
+    string name = 2;
+    repeated Product products = 3;
+}
+
+message GetProductByIdRequest {
+    int32 id = 1;
+}
+
+message GetProductByIdResponse {
+    Product product = 1;
+}
+
+message GetCategoryByIdRequest {
+    int32 id = 1;
+}
+
+message GetCategoryByIdResponse {
+    Category category = 1;
+}
+
+message GetCategoriesResponse {
+    repeated Category categories = 1;
+}
+
+service Inventory {
+    rpc GetProductById (GetProductByIdRequest) returns (GetProductByIdResponse);
+    rpc GetCategoryById (GetCategoryByIdRequest) returns (GetCategoryByIdResponse);
+    rpc GetCategories (google.protobuf.Empty) returns (GetCategoriesResponse);
+}
