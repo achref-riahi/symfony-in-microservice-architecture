@@ -1,0 +1,35 @@
+# https://taskfile.dev
+
+version: '3'
+
+tasks:
+  up:
+    cmds:
+      - docker-compose -f docker-compose.dev.yml up -d
+    silent: true
+    env:
+      FINANCE_APP_CONTAINER: '{{.FINANCE_APP_CONTAINER}}'
+      NETWORK_NAME: '{{.NETWORK_NAME}}'
+
+  down:
+    cmds:
+      - docker-compose -f docker-compose.dev.yml down -v
+    silent: true
+
+  build:
+    cmds:
+      - docker-compose -f docker-compose.dev.yml build
+    silent: true
+
+  restart:
+    cmds:
+      - docker-compose -f docker-compose.dev.yml restart {{.CLI_ARGS}}
+    silent: true
+
+  fire-all:
+    cmds:
+      - task: down
+      - task: build
+      - task: up
+    silent: true
+

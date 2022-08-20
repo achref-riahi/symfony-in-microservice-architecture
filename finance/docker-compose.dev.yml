@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  go:
+    container_name: ${FINANCE_APP_CONTAINER:-finance_app}
+    build:
+      context: .
+      dockerfile: ./dockerfiles/go/dev.Dockerfile
+    volumes:
+      - ./:/app
+    ports:
+      - ${GRPC_HOST_PORT:-29000}:9000
+networks:
+  default:
+    name: ${NETWORK_NAME:-finance_network}
