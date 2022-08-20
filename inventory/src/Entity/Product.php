@@ -8,30 +8,56 @@ use App\Repository\ProductRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Core\Annotation\ApiResource;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
 #[ApiResource(
     collectionOperations: [],
-    itemOperations: ['get'],
+    itemOperations: [
+        'get' => [
+            'openapi_context' => [
+                'parameters' => [
+                    [
+                        'in' => 'query',
+                        'name' => 'currency',
+                        'type' => 'string',
+                        'enum' => ['USD', 'EUR'],
+                        'description' => 'The currency in which you wish to get the product price (Only USD and EUR are accepted) .',
+                    ],
+                ]
+            ]
+        ]
+    ],
+    normalizationContext: ['groups' => ['product:read']],
+    denormalizationContext: ['groups' => ['product:write']],
 )]
 class Product
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['product:read', 'product:write'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['product:read', 'product:write'])]
+    #[Assert\NotBlank]
     private ?string $name = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['product:read', 'product:write'])]
+    #[Assert\NotBlank]
     private ?int $quantity = null;
 
-    #[ORM\ManyToOne(inversedBy: 'products')]
-    private ?Category $category = null;
-
     #[ORM\Column(type: Types::DECIMAL, precision: 8, scale: 3)]
+    #[Groups(['product:read', 'product:write'])]
+    #[Assert\NotBlank]
     private ?string $price = null;
+
+    #[ORM\ManyToOne(inversedBy: 'products', cascade: ['persist'])]
+    #[Groups(['product:read', 'product:write'])]
+    private ?Category $category = null;
 
     /**
      * Get product id.
@@ -133,5 +159,19 @@ class Product
         $this->category = $category;
 
         return $this;
+    }
+
+    /**
+     * Convert price using currency exchange rate.
+     *
+     * @param float $exchangeRate
+     * @return void
+     */
+    public function setPriceWithRate(float $exchangeRate): void
+    {
+        $convertedPriceValue = (float)$this->getPrice() * $exchangeRate;
+        $integer = (int)($convertedPriceValue);
+        $fraction = ceil((($convertedPriceValue - $integer) * 1000) / 250) * 250 ;
+        $this->setPrice($integer . '.' . $fraction);
     }
 }

@@ -9,10 +9,11 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Core\Annotation\ApiResource;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
 #[ApiResource(
-    collectionOperations: ['get'],
+    collectionOperations: [],
     itemOperations: ['get'],
 )]
 class Category
@@ -20,14 +21,16 @@ class Category
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['product:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['product:read'])]
     private ?string $name = null;
 
     #[ORM\OneToMany(mappedBy: 'category', targetEntity: Product::class)]
     private Collection $products;
-    
+
     public function __construct()
     {
         $this->products = new ArrayCollection();
@@ -68,7 +71,7 @@ class Category
 
     /**
      * Get category products.
-     * 
+     *
      * @return Collection<int, Product>
      */
     public function getProducts(): Collection
